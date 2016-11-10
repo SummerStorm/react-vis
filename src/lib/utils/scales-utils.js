@@ -229,6 +229,10 @@ function _createScaleObjectForFunction(
  * @private
  */
 function _collectScaleObjectFromProps(props, attr) {
+  // Ugly hack to fake the scales for y2
+  if( attr == "y2") {
+    attr = "y";
+  }
   const {
     [attr]: value,
     [`_${attr}Value`]: fallbackValue,

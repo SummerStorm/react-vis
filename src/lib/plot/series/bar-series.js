@@ -30,6 +30,7 @@ class BarSeries extends AbstractSeries {
       ... AbstractSeries.propTypes,
       linePosAttr: React.PropTypes.string,
       valuePosAttr: React.PropTypes.string,
+      valueTwoPosAttr: React.PropTypes.string,
       lineSizeAttr: React.PropTypes.string,
       valueSizeAttr: React.PropTypes.string
     };
@@ -56,6 +57,7 @@ class BarSeries extends AbstractSeries {
       animation,
       lineSizeAttr,
       valuePosAttr,
+      valueTwoPosAttr,
       linePosAttr,
       valueSizeAttr
     } = this.props;
@@ -78,6 +80,8 @@ class BarSeries extends AbstractSeries {
     const lineFunctor = this._getAttributeFunctor(linePosAttr);
     const valueFunctor = this._getAttributeFunctor(valuePosAttr);
     const value0Functor = this._getAttr0Functor(valuePosAttr);
+    const valueTwoFunctor = this._getAttributeFunctor(valueTwoPosAttr);
+    const valueTwo0Functor = this._getAttr0Functor(valueTwoPosAttr);
     const fillFunctor = this._getAttributeFunctor('fill') ||
       this._getAttributeFunctor('color');
     const strokeFunctor = this._getAttributeFunctor('stroke') ||
@@ -92,6 +96,14 @@ class BarSeries extends AbstractSeries {
         ref="container"
         transform={`translate(${marginLeft},${marginTop})`}>
         {data.map((d, i) => {
+          var valuePos, valueSize;
+          if ("y2" in d) {
+            valuePos = Math.min(value0Functor(d), Math.min(valueFunctor(d), valueTwoFunctor(d)));
+            valueSize = Math.abs(valueTwoFunctor(d) - valueFunctor(d));
+          }else{
+            valuePos = Math.min(value0Functor(d), valueFunctor(d));
+            valueSize = Math.abs(-value0Functor(d) + valueFunctor(d));
+          }
           const attrs = {
             style: {
               opacity: opacityFunctor && opacityFunctor(d),
@@ -101,8 +113,8 @@ class BarSeries extends AbstractSeries {
             [linePosAttr]: lineFunctor(d) - itemSize +
             (itemSize * 2 / sameTypeTotal * sameTypeIndex),
             [lineSizeAttr]: itemSize * 2 / sameTypeTotal,
-            [valuePosAttr]: Math.min(value0Functor(d), valueFunctor(d)),
-            [valueSizeAttr]: Math.abs(-value0Functor(d) + valueFunctor(d)),
+            [valuePosAttr]: valuePos,
+            [valueSizeAttr]: valueSize,
             onClick: e => this._valueClickHandler(d, e),
             onMouseOver: e => this._valueMouseOverHandler(d, e),
             onMouseOut: e => this._valueMouseOutHandler(d, e),
